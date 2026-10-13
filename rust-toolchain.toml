@@ -1,0 +1,4 @@
+[toolchain]
+# Mismo compilador con el que se publicó el host v2026.41 (ver Land Survey host-build.json).
+channel = "1.99.0"
+profile = "minimal"

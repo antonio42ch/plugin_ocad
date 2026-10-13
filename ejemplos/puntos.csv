@@ -1,0 +1,5 @@
+nombre,x,y,z,descripcion
+P1,0,0,100.0,esquina
+P2,50,0,101.5,esquina
+P3,50,30,102.2,arbol
+P4,0,30,100.8,poste

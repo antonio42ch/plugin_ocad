@@ -1,0 +1,14 @@
+[plugin]
+id = "opencad.geometria"
+name = "Geometría"
+version = "0.1.0"
+description = "Plugin de ejemplo: polígonos regulares, estrellas, rejillas e importación de puntos CSV."
+author = "Antonio"
+license = "GPL-3.0-only"
+
+[opencad]
+# Debe coincidir con API_VERSION de la ocs_plugin_api enlazada (v2026.41 usa la API 7).
+api_version = 7
+ribbon_order = 60
+command_prefixes = ["GM_"]
+xdata_apps = ["GEOMETRIA_FIGURA", "GEOMETRIA_PUNTO"]

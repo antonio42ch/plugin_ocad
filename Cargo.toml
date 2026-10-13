@@ -1,0 +1,27 @@
+[package]
+name = "opencad-geometria-plugin"
+version = "0.1.0"
+edition = "2021"
+description = "Plugin de ejemplo para Open CAD Studio: polígonos, estrellas, rejillas e importación de puntos CSV."
+license = "GPL-3.0-only"
+
+# Un plugin es una biblioteca dinámica con ABI C que el host carga en tiempo de ejecución.
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# El contrato estable, con la superficie `host` (HostApi / BuiltinPlugin).
+# Fijado al commit del tag v2026.41 de OpenCADStudio, igual que Land Survey:
+# el plugin debe compilarse contra la MISMA versión de la API que el host.
+ocs_plugin_api = { git = "https://github.com/HakanSeven12/OpenCADStudio", rev = "cff240ef71b4d7d0e4832c8d260c5af7f2fe3b17", features = ["host"] }
+
+# Modelo de entidades CAD del host. Debe resolver EXACTAMENTE al mismo codec que
+# usa ocs_plugin_api en esa versión (mismo URL y mismo `rev`, escrito igual),
+# o los tipos que cruzan la frontera plugin/host no serían los mismos.
+codec = { package = "opencadcodec", git = "https://github.com/HakanSeven12/opencadcodec.git", rev = "8189f83", features = ["serde"] }
+
+# Motor de geometría sin dependencias del host (solo std): testeable con `cargo test`.
+geometria = { path = "crates/geometria" }
+
+[workspace]
+members = ["crates/geometria"]
