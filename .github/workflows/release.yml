@@ -1,0 +1,67 @@
+name: release
+
+# Al subir un tag vX.Y.Z compila el plugin para Windows y Linux y publica una
+# release con los archivos que busca el gestor de plugins de Open CAD Studio:
+#   opencad_geometria_plugin-<os>-x86_64.<dll|so>  +  plugin.toml
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            lib: opencad_geometria_plugin.dll
+            asset: opencad_geometria_plugin-windows-x86_64.dll
+          - os: ubuntu-22.04
+            lib: libopencad_geometria_plugin.so
+            asset: opencad_geometria_plugin-linux-x86_64.so
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # rust-toolchain.toml fija el mismo rustc que el host; rustup lo instala solo.
+      - name: Comprobar rustc
+        shell: bash
+        run: |
+          rustc --version
+          esperado=$(sed -n 's/^rustc_version = "\(.*\)"/\1/p' plugin.toml)
+          if [ "$(rustc --version)" != "$esperado" ]; then
+            echo "::error::rustc '$(rustc --version)' no coincide con plugin.toml '$esperado'"
+            exit 1
+          fi
+
+      - name: Compilar
+        run: cargo build --release
+
+      - name: Preparar archivos
+        shell: bash
+        run: |
+          mkdir dist
+          cp "target/release/${{ matrix.lib }}" "dist/${{ matrix.asset }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Publicar release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* plugin.toml \
+            --title "$GITHUB_REF_NAME" --generate-notes
